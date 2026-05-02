@@ -63,6 +63,55 @@ void vga_puts(const char *str) {
         vga_putchar(*str++);
     }
 }
+/* write a single character at current cursor (used from IRQ handler) */
+void vga_putc(char c) {
+    uint8_t color = vga_make_color(vga_state.foreground, vga_state.background);
+    uint16_t *vram = (uint16_t *)VGA_MEMORY;
+
+    if (c == '\n') {
+        vga_state.cursor_x = 0;
+        vga_state.cursor_y++;
+    } else if (c == '\r') {
+        vga_state.cursor_x = 0;
+    } else if (c == '\t') {
+        vga_state.cursor_x += 4;
+    } else {
+        uint16_t index = vga_state.cursor_y * VGA_WIDTH + vga_state.cursor_x;
+        vram[index] = vga_make_vram_entry((unsigned char)c, color);
+        vga_state.cursor_x++;
+    }
+
+    if (vga_state.cursor_x >= VGA_WIDTH) {
+        vga_state.cursor_x = 0;
+        vga_state.cursor_y++;
+    }
+    if (vga_state.cursor_y >= VGA_HEIGHT) {
+        vga_state.cursor_y = 0; /* simple behavior consistent with your code */
+    }
+}
+
+/* remove previous character, update cursor and VRAM */
+void vga_backspace(void) {
+    uint8_t color = vga_make_color(vga_state.foreground, vga_state.background);
+    uint16_t *vram = (uint16_t *)VGA_MEMORY;
+
+    /* if at start of screen, nothing to do */
+    if (vga_state.cursor_x == 0 && vga_state.cursor_y == 0) return;
+
+    /* move cursor left, wrap to previous line if needed */
+    if (vga_state.cursor_x > 0) {
+        vga_state.cursor_x--;
+    } else {
+        /* at column 0 but not top line -> move to last column of previous line */
+        vga_state.cursor_y--;
+        vga_state.cursor_x = VGA_WIDTH - 1;
+    }
+
+    /* clear the character at the new cursor position */
+    uint16_t index = vga_state.cursor_y * VGA_WIDTH + vga_state.cursor_x;
+    vram[index] = vga_make_vram_entry(' ', color);
+}
+
 
 void vga_clear(void) {
     uint8_t color = vga_make_color(vga_state.foreground, vga_state.background);

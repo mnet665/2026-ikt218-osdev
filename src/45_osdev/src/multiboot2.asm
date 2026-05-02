@@ -33,8 +33,12 @@ bits 32
 _start:
     cli
 
-    mov esp, stack_top
+    ; Ensure GDT is loaded and segment registers reloaded first
+    call reloadSegments
 
+    mov esp, stack_top
+    mov ebp, esp
+    
 	push ebx
 	push eax
 

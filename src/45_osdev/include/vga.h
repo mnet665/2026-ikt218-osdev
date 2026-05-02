@@ -50,8 +50,14 @@ void vga_puts(const char *str);
 // Clear the screen
 void vga_clear(void);
 
-// Set cursor position
+// Setting the cursor position
 void vga_set_cursor(uint16_t x, uint16_t y);
+
+// write a single character
+void vga_putc(char c);
+
+// backspace functionality
+void vga_backspace(void);
 
 #endif
 

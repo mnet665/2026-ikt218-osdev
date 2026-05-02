@@ -51,7 +51,40 @@ int printf(const char *format, ...) {
                 char ch = (char)va_arg(args, int);
                 vga_putchar(ch);
                 count++;
-            } else if (*format == '%') {
+            } else if (*format == 'x' || *format == 'X') {
+    		uint32_t num = va_arg(args, uint32_t);
+    
+    		char digits[9];
+    		int idx = 0;
+    
+    		if (num == 0) {
+        	digits[idx++] = '0';
+    		} else {
+        	    while (num > 0) {
+            		int nibble = num % 16;
+            		digits[idx++] = nibble < 10 ? '0' + nibble : 'a' + nibble - 10;
+            		num /= 16;
+        	    }
+    		}
+    
+    		for (int i = idx - 1; i >= 0; i--) {
+        	    vga_putchar(digits[i]);
+        	    count++;
+    		}
+
+	    } else if (*format == 'p') {
+    		uint32_t num = va_arg(args, uint32_t);
+    
+    		vga_putchar('0'); vga_putchar('x');
+    		count += 2;
+    
+   		// Always print 8 hex digits for pointers
+    		for (int i = 7; i >= 0; i--) {
+        	    int nibble = (num >> (i * 4)) & 0xF;
+        	    vga_putchar(nibble < 10 ? '0' + nibble : 'a' + nibble - 10);
+        	    count++;
+    		}
+	    } else if (*format == '%') {
                 vga_putchar('%');
                 count++;
             }
