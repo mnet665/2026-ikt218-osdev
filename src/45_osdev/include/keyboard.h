@@ -4,5 +4,7 @@
 
 void keyboard_install();
 
+char keyboard_getchar(void);
+
 #endif
 

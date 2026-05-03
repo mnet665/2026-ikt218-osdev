@@ -60,6 +60,18 @@ void keyboard_handler(int irq) {
     pic_send_eoi(1);
 }
 
+char keyboard_getchar(void) {
+    volatile int *head = &kbuf_head;
+    volatile int *tail = &kbuf_tail;
+    // Wait until there is a character in the buffer
+    while (*tail == *head) {
+        //asm volatile("hlt");  // sleep until next interrupt
+    }
+    char c = (char)kbuf[kbuf_tail];
+    kbuf_tail = (kbuf_tail + 1) & (KBUF_SIZE - 1);
+    return c;
+} 
+
 void keyboard_install() {
 }
 
