@@ -71,6 +71,13 @@ char keyboard_getchar(void) {
     kbuf_tail = (kbuf_tail + 1) & (KBUF_SIZE - 1);
     return c;
 } 
+// added this for matrix animation
+char keyboard_check(void) {
+    if (kbuf_tail == kbuf_head) return 0;
+    char c = (char)kbuf[kbuf_tail];
+    kbuf_tail = (kbuf_tail + 1) & (KBUF_SIZE - 1);
+    return c;
+} 
 
 void keyboard_install() {
 }

@@ -6,27 +6,35 @@
 #include "../include/pit.h"
 #include "../include/vga.h"
 #include "../include/song.h"
+#include "../include/matrix.h"
+#include "../include/pic.h"
 
 extern void idt_install(void);
 extern void irq_install();
 extern void keyboard_install();
+extern uint8_t inb_port(uint16_t port);
+
 
 //  Declared the C++ song player function so C can call it
 extern void play_song_impl(Song* song);
 
+// Random number generator for matrix
+extern void srand(unsigned int seed);
+
 // Print Menu 
 void print_menu(void) {
     vga_clear();
-    printf("==========================================\n");
-    printf("       UiA Operating System group 45 - Menu        \n");
-    printf("==========================================\n");
+    printf("================================================\n");
+    printf("    UiA Operating System group 45 - Menu        \n");
+    printf("================================================\n");
     printf("\n");
     printf("  1. Info & Tests\n");
     printf("  2. Play Song\n");
     printf("  3. Terminal\n");
+    printf("  4. Matrix rain animation (pres 0 to return)\n");
     printf("\n");
-    printf("==========================================\n");
-    printf("Select an option (1-3): ");
+    printf("================================================\n");
+    printf("Select an option (1-4): ");
 }
 
 // Option 1: Info & Tests
@@ -151,6 +159,9 @@ void run_menu(void) {
             case '3':
                 run_terminal();
                 break;
+            case '4':
+                run_matrix_rain();
+                break;
             default:
                 // re display the menu
                 break;
@@ -175,12 +186,19 @@ void kernel_main(void) {
     // Initialize PIT
     init_pit();
 
+    // Flush PS2 buffer before enabeling the interrupts
+    while (inb_port(0x64) & 0x01) inb_port(0x60);
+
     // Enable interrupts
     asm volatile("sti");
 
     // Flush keypresses during boot
-    sleep_interrupt(100);
-    
+    sleep_interrupt(200);
+
+
+    // making Seed for the random number generator
+    srand(0xDEADBEEF);
+
     // Start the menu
     run_menu();
 

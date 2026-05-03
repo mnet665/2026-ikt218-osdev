@@ -9,6 +9,9 @@ extern void set_idt_entry_public(int n, uint32_t handler);
 extern void keyboard_handler(int irq);
 extern void pit_irq_handler(void);
 
+extern uint8_t inb_port(uint16_t port);
+extern void outb_port(uint16_t port, uint8_t val);
+
 #define IRQ_BASE 32
 
 extern void irq0(); extern void irq1(); extern void irq2(); extern void irq3();
@@ -42,11 +45,29 @@ void irq_install() {
   
 }
 
-void irq_handler_c(int irq) {
-    if (irq == 0) {           
-        pit_irq_handler();    
+ void irq_handler_c(int irq) {
+    // Check for spurious IRQ7
+    if (irq == 7) {
+        // Read PIC In-Service Register to verify it's real
+        outb_port(0x20, 0x0B);          // OCW3: read ISR
+        uint8_t isr = inb_port(0x20);
+        if (!(isr & 0x80)) return; // Spurious — do NOT send EOI
+    }
+    // Check for spurious IRQ15
+    if (irq == 15) {
+        outb_port(0xA0, 0x0B);
+        uint8_t isr = inb_port(0xA0);
+        if (!(isr & 0x80)) {
+            outb_port(0x20, 0x20); // Send EOI to master only
+            return;
+        }
+    }
+
+    if (irq == 0) {
+        pit_irq_handler();
     } else if (irq == 1) {
         keyboard_handler(irq);
     }
+
     pic_send_eoi(irq);
-}
+} 
