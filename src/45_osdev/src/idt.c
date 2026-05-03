@@ -1,5 +1,5 @@
 #include "../include/idt.h"
-#include "../include/vga.h"   // or your printf header path
+#include "../include/vga.h"   
 #include <../include/libc/stdint.h>
 
 extern void lidt(void*); // assembly stub that does lidt with pointer
@@ -38,9 +38,9 @@ void idt_install(void) {
         set_idt_entry(i, 0, 0, 0);
     }
 
-    // Use kernel code segment selector (typically 0x08). Adjust if your GDT differs.
+    // This is the kernel segment selector
     uint16_t code_sel = 0x08;
-    // 0x8E = present, ring 0, 32-bit interrupt gate (10001110b)
+    // 0x8E = present, ring 0, 32-bit interrupt gate.
     uint8_t intr_flags = 0x8E;
 
     set_idt_entry(0,  (uint32_t)isr0, code_sel, intr_flags);

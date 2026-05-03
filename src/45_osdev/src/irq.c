@@ -3,9 +3,11 @@
 #include <../include/libc/stdint.h>
 #include "../include/vga.h"
 #include "../include/keyboard.h"
+#include "../include/pit.h" 
 
 extern void set_idt_entry_public(int n, uint32_t handler);
 extern void keyboard_handler(int irq);
+extern void pit_irq_handler(void);
 
 #define IRQ_BASE 32
 
@@ -43,7 +45,9 @@ void irq_install() {
 }
 
 void irq_handler_c(int irq) {
-    if (irq == 1) {
+    if (irq == 0) {           
+        pit_irq_handler();    
+    } else if (irq == 1) {
         keyboard_handler(irq);
     }
     pic_send_eoi(irq);
