@@ -39,9 +39,7 @@ void irq_install() {
     // Need to add comments here
     extern uint8_t inb_port(uint16_t port);
     extern void outb_port(uint16_t port, uint8_t val);
-    uint8_t mask = inb_port(0x21);
-    mask &= ~(1 << 1);
-    outb_port(0x21, mask);
+  
 }
 
 void irq_handler_c(int irq) {

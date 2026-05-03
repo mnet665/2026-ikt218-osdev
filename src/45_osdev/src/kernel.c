@@ -120,9 +120,7 @@ void run_terminal(void) {
                 // newline handled by keyboard_handler
                 line[i] = '\0';
                 break;
-            } else if (c == '\b') {
-                // backspace handled by keyboard_handler (vga_backspace)
-                if (i > 0) i--;
+
             } else {
                 //  just store charchter
                 if (i < 255) line[i++] = c;
@@ -180,6 +178,9 @@ void kernel_main(void) {
     // Enable interrupts
     asm volatile("sti");
 
+    // Flush keypresses during boot
+    sleep_interrupt(100);
+    
     // Start the menu
     run_menu();
 
